@@ -1,13 +1,14 @@
 {
-  "name": "volunteer-network-main-server",
+  "name": "server",
   "version": "1.0.0",
-  "description": "",
+  "description": "Volunteer Network Backend",
   "main": "index.js",
   "scripts": {
     "start": "node index.js",
+    "start:dev":"nodemon index.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "author": "\"mahin\"",
+  "author": "Programmer Nazmul Huda",
   "license": "ISC",
   "dependencies": {
     "body-parser": "^1.19.0",

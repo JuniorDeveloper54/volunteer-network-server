@@ -1,84 +1,64 @@
-
 const express = require('express')
-const MongoClient = require('mongodb').MongoClient;
-const cors = require('cors')
-const bodyParser = require('body-parser');
-const { ObjectID } = require('mongodb');
-require('dotenv').config();
-
 const app = express()
+const PORT = 5000
+const bodyParser = require('body-parser')
+const cors = require('cors')
+const MongoClient = require('mongodb').MongoClient
+const ObjectId = require('mongodb').ObjectId
+
+
 app.use(cors())
 app.use(bodyParser.json())
-const port = process.env.PORT || 4000;
+require('dotenv').config()
 
-const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASSWORD}@cluster0.odwvb.mongodb.net/volunteer-network?retryWrites=true&w=majority`;
-const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology: true });
+
+const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster0.mx72a.mongodb.net/${process.env.DB_NAME}?retryWrites=true&w=majority`
+const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology: true})
 client.connect(err => {
-    const eventsCollections = client.db("volunteer-network").collection("taskCategory");
-    const volunteerCollection = client.db("volunteer-network").collection("newVolunteer");
-    //add volunteer in database 
-    app.post('/addVolunteer', (req, res) => {
-        const newVolunteer = req.body;
-        volunteerCollection.insertOne(newVolunteer)
-            .then(result => {
-                res.send(result.insertedCount > 0);
-            })
-    })
-    //get specific events
-    app.get('/getEvent/:id', (req, res) => {
-        const taskId = parseInt(req.params.id)
-        eventsCollections.find({ id: taskId })
-            .toArray((err, documents) => {
-                res.send(documents[0]);
-            })
-    })
-    // get all volunteer
-    app.get('/getVolunteerData', (req, res) => {
-        eventsCollections.find({})
-            .toArray((err, documents) => {
-                res.send(documents);
-            })
-    })
-    // find specific volunteer with email 
-    app.get('/getUserTasks', (req, res) => {
-        volunteerCollection.find({ userEmail: req.query.userEmail })
-            .toArray((err, documents) => {
-                res.send(documents);
-            })
-    })
-    //admin panel
-    // get all volunteer 
-    app.get('/getAllVolunteer', (req, res) => {
-        volunteerCollection.find({})
-            .toArray((err, documents) => {
-                res.send(documents);
-            })
-    })
-    //delete specific volunteer 
-    app.delete('/CancelEvents/:id', (req, res) => {
-        const userId = ObjectID(req.params.id);
+  const taskCollection = client.db(process.env.DB_NAME).collection("volunteer-tasks")
+  const userCollection = client.db(process.env.DB_NAME).collection("user-tasks")
 
-        volunteerCollection.deleteOne({ _id: userId })
-            .then(result => {
-                res.send(result.deletedCount > 0)
-            })
-    })
-    app.post('/addEvents', (req, res) => {
-        const newEvents = req.body;
-        eventsCollections.insertOne(newEvents)
-            .then(result => {
-                res.send(result.insertedCount > 0);
-            })
+    app.get("/allTasks",(req,res) => {
+      taskCollection.find({})
+      .toArray((err,documnets)=>res.send(documnets))
     })
 
-});
+    app.post("/addEvent",(req,res)=>{
+      taskCollection.insertOne(req.body)
+      .then(result=>res.send(result))
+    })
+
+    app.get("/singleTask",(req,res) => {
+      taskCollection.find({_id:ObjectId(req.query.id)})
+      .toArray((err,documnet)=>res.send(documnet[0]))
+    })
+
+    app.post("/userTask",(req,res)=>{
+      userCollection.insertOne(req.body)
+      .then(result=>res.send(result))
+    })
+
+    app.get("/getUserTask",(req,res) => {
+      userCollection.find({email:req.query.email})
+      .toArray((err,documnets)=>res.send(documnets))
+    })
+
+    app.delete("/deleteTask/:id",(req,res)=>{
+       userCollection.deleteOne({_id:req.params.id})
+      .then(result=>res.send(result))
+    })
+
+    app.get("/allUser",(req,res) => {
+      userCollection.find({})
+      .toArray((err,documnets)=>res.send(documnets))
+    })
 
 
-
-
-
-app.get('/', (req, res) => {
-    res.send('Hello World!')
 })
 
-app.listen(port)
+
+app.get('/',(req,res)=>res.send("Welcome Developer Nazmul"))
+
+app.listen(process.env.PORT || PORT)
+
+
